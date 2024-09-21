@@ -4,6 +4,7 @@ import "./ui/globals.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "toastify-js/src/toastify.css"
 import { ThemeProvider } from "./ThemeProvider";
+import { Analytics } from '@vercel/analytics/react';
 
 const geistSans = localFont({
   src: "./ui/fonts/GeistVF.woff",
@@ -40,6 +41,8 @@ export default function RootLayout({
           >
             {children}
           </ThemeProvider>
+
+          <Analytics />
         
       </body>
     </html>
