@@ -10,14 +10,18 @@ export default function Home() {
   const [dAppToolkit, setdAppToolkit] = useState<RadixDappToolkit | null>(null)
   const [walletAddresses, setWalletAddresses] = useState(new Array<string>())
 
-  const dAppDef = networkId == RadixNetwork.Stokenet ? "account_tdx_2_12yf6xmwwhnx45fxms9q2qe094fwhjrls6s0xznsltug94ht2amyt55" : "account_rdx12x42kaa2mfuy8huqhxgl9e2sp4mqj7yy6gxc09fyevdzxpj2l2zlmw"
-  const radixLocalStorageKeyPrefix = `rdt:${dAppDef}:${networkId}`;
+  function getDAppDef(networkId: number){
+    return networkId == RadixNetwork.Stokenet ? "account_tdx_2_12yf6xmwwhnx45fxms9q2qe094fwhjrls6s0xznsltug94ht2amyt55" : "account_rdx12x42kaa2mfuy8huqhxgl9e2sp4mqj7yy6gxc09fyevdzxpj2l2zlmw"
+  }
+
+  const radixLocalStorageKeyPrefix = `rdt:${getDAppDef(networkId)}:${networkId}`;
 
   function setupDAppToolkit(networkId: number) {
+
     const newDApptoolkit = RadixDappToolkit({
-          dAppDefinitionAddress: dAppDef,
+          dAppDefinitionAddress: getDAppDef(networkId),
           networkId: networkId,
-          applicationName: 'Radix Web3 dApp',
+          applicationName: 'Radix Developer Console',
           applicationVersion: '1.0.0',
     })
 
