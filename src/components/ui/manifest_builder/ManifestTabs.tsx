@@ -26,7 +26,7 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
     const [manifests, setManifests] = useImmer<Array<Manifest>>([]);
 
     const [currentTab, setCurrentTab] = useState(0);
-    const [currentlyDraggingTab, setCurrentlyDraggingTab] = useState<number | null>(null);
+    const [currentlyDraggingTabIndex, setCurrentlyDraggingTabIndex] = useState<number | null>(null);
 
     const [newTabName, setNewTabName] = useState("");
     const [isAddingTab, setIsAddingTab] = useState(false);
@@ -167,22 +167,28 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
     function handleTabChange(newTab: number) {
         setCurrentTab(newTab);
 
-        console.log("Setting last_tab to: " + newTab.toString());
-
         // Save to local storage
         localStorage.setItem("last_tab", newTab.toString());
     }
 
-    function handleTabDragDrop(e: DragEvent<HTMLDivElement>, droppedOnTab: number) {
+    function handleTabDragDrop(e: DragEvent<HTMLDivElement>, droppedOnTabIndex: number) {
         e.stopPropagation();
 
-        if (droppedOnTab == currentlyDraggingTab) {
+        if (droppedOnTabIndex == currentlyDraggingTabIndex || currentlyDraggingTabIndex == null) {
             // Dropping on source
             return;
         }
 
-        console.log(`Dropping ${currentlyDraggingTab} onto ${droppedOnTab}`);
-        //todo transform manifests map to an array
+        setManifests((manifests) => {
+            let backup = manifests[droppedOnTabIndex];
+            manifests[droppedOnTabIndex] = manifests[currentlyDraggingTabIndex];
+            manifests[currentlyDraggingTabIndex] = backup;
+
+            // Save to local storage
+            localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests));
+        });
+
+        handleTabChange(droppedOnTabIndex);
     }
 
     const tabListItems = manifests.map((manifest, index) => {
@@ -190,11 +196,11 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
             // value={index}
             onClick={() => handleTabChange(index)}
             data-state={currentTab == index ? "active" : "inactive"}
-            className={`${currentlyDraggingTab == index ? "opacity-40" : ""} group cursor-pointer border-[1px] border-white/50 mr-2 data-[state=active]:bg-gray-300 data-[state=active]:text-gray-600 data-[state=active]:shadow-md inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm`}
+            className={`${currentlyDraggingTabIndex == index ? "opacity-40" : ""} group cursor-pointer border-[1px] border-white/50 mr-2 data-[state=active]:bg-gray-300 data-[state=active]:text-gray-600 data-[state=active]:shadow-md inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm`}
             key={manifest.id}
             draggable="true"
-            onDragStart={() => setCurrentlyDraggingTab(index)}
-            onDragEnd={() => setCurrentlyDraggingTab(null)}
+            onDragStart={() => setCurrentlyDraggingTabIndex(index)}
+            onDragEnd={() => setCurrentlyDraggingTabIndex(null)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleTabDragDrop(e, index)}>
 
