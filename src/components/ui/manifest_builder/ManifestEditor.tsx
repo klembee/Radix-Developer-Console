@@ -9,6 +9,7 @@ import { Checkbox } from '../checkbox';
 import { useEffect, useState } from 'react';
 import { Input } from '../input';
 import { xrdAddress } from '@/lib/radix';
+import Manifest from '@/lib/data/Manifest';
 
 
 interface ManifestEditorProps {
@@ -16,7 +17,7 @@ interface ManifestEditorProps {
     dAppToolkit: RadixDappToolkit | null,
     networkId: number,
     variables: Map<string, Variable>,
-    manifest: string,
+    manifest: Manifest,
     onContentChange: (content: string) => void,
     onNewTransaction: (transaction_hash: string, manifest: string) => void
 }
@@ -50,10 +51,10 @@ export default function ManifestEditor({ dAppToolkit, networkId, walletAddresses
     }
 
     function preparedManifest(): string {
-        let newManifest = manifest.slice(0);
+        let newManifest = manifest.content.slice(0);
 
         // Set the variables
-        for (const match of manifest.matchAll(/\${?\w+}?/g)) {
+        for (const match of manifest.content.matchAll(/\${?\w+}?/g)) {
             const variable = match[0].replace(/\W/g, "")
             const replaceWith = variables.get(variable)
             if (replaceWith) {
@@ -148,7 +149,7 @@ export default function ManifestEditor({ dAppToolkit, networkId, walletAddresses
             <CodeMirror
                 autoFocus={true}
                 extensions={[languageSupport]}
-                value={manifest}
+                value={manifest.content}
                 theme={theme == "light" ? "light" : "dark"}
                 minHeight="100px"
                 maxHeight="500px"

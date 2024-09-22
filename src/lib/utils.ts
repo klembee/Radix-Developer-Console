@@ -24,3 +24,7 @@ export function mapJSONReviver(_key: any, value: any) {
   }
   return value;
 }
+
+export function randomHash(size: number) {
+  return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+}

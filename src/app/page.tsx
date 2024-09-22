@@ -5,6 +5,8 @@ import ManifestBuilder from "@/components/ui/manifest_builder/ManifestBuilder";
 import { DataRequestBuilder, RadixDappToolkit, RadixNetwork } from "@radixdlt/radix-dapp-toolkit";
 import { useEffect, useState } from "react";
 
+const currentLocalStorageSchemaVersion = "2";
+
 export default function Home() {
   const [networkId, setNetwork] = useState<number>(RadixNetwork.Stokenet)
   const [dAppToolkit, setdAppToolkit] = useState<RadixDappToolkit | null>(null)
@@ -36,6 +38,12 @@ export default function Home() {
 
   useEffect(() => {
     if(typeof window !== 'undefined' && window.localStorage) {
+      const localStorageSchemaVersion = localStorage.getItem("schemaversion");
+      if(localStorageSchemaVersion == null || localStorageSchemaVersion != currentLocalStorageSchemaVersion) {
+        localStorage.clear();
+        localStorage.setItem("schemaversion", currentLocalStorageSchemaVersion);
+      } 
+      
       let savedNetwork = localStorage.getItem("network");
       if(savedNetwork == null) {
         localStorage.setItem("network", networkId.toString());

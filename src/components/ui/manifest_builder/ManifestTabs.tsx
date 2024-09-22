@@ -1,15 +1,16 @@
 import { Button } from "../button";
 import { Input } from "../input";
-import { useRef, useState, KeyboardEvent, useEffect } from "react";
+import { useRef, useState, KeyboardEvent, MouseEvent, DragEvent, useEffect } from "react";
 import { useImmer } from "use-immer";
 import { enableMapSet } from "immer";
 import ManifestEditor from "./ManifestEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import { sampleManifests } from "../../../lib/manifests/sampleManifests";
 import Variable from "@/lib/data/Variable";
-import { mapJSONReplacer, mapJSONReviver } from "@/lib/utils";
+import { mapJSONReplacer, mapJSONReviver, randomHash } from "@/lib/utils";
 import _ from "underscore";
 import { RadixDappToolkit } from "@radixdlt/radix-dapp-toolkit";
+import Manifest from "@/lib/data/Manifest";
 
 interface ManifestTabsProps {
     walletAddresses: string[],
@@ -22,9 +23,10 @@ interface ManifestTabsProps {
 export default function ManifestTabs({ networkId, variables, ...props }: ManifestTabsProps) {
     enableMapSet();
 
-    const [manifests, setManifests] = useImmer<Map<string, string>>(new Map());
+    const [manifests, setManifests] = useImmer<Array<Manifest>>(new Array());
 
-    const [currentTab, setCurrentTab] = useState("Demo");
+    const [currentTab, setCurrentTab] = useState(0);
+    const [currentlyDraggingTab, setCurrentlyDraggingTab] = useState<number | null>(null);
 
     const [newTabName, setNewTabName] = useState("");
     const [isAddingTab, setIsAddingTab] = useState(false);
@@ -41,61 +43,75 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
                 setManifests(JSON.parse(manifestsInStorage, mapJSONReviver));
 
                 if (lastTab) {
-                    setCurrentTab(lastTab);
+                    setCurrentTab(parseInt(lastTab));
                 }
 
             } else {
-                const defaultManifests = new Map([
-                    [
-                        "Demo",
-                        sampleManifests[0]
-                    ]
-                ]);
+                const defaultManifests = [
+                    {
+                        id: randomHash(16),
+                        tabName: "Demo",
+                        content: sampleManifests[0]
+                    }
+                ];
 
                 // Set to default manifests
                 setManifests(defaultManifests);
 
                 // Save the manifests to local storage
                 saveManifestsToLocalStorage(defaultManifests);
-                localStorage.setItem("last_tab", Array.from(defaultManifests.keys())[0] || "")
+                localStorage.setItem("last_tab", "0");
             }
         }
     }, [networkId])
 
-    const saveManifestsToLocalStorage = _.debounce((manifests: Map<string, string>) => {
-        localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests, mapJSONReplacer))
+    const saveManifestsToLocalStorage = _.debounce((manifests: Array<Manifest>) => {
+        localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests))
     }, 500)
 
-    function handleManifestsChange(tabName: string, newContent: string) {
-        setManifests((manifests) => {
-            manifests.set(tabName, newContent)
-            saveManifestsToLocalStorage(new Map(manifests))
-        });
+    function handleManifestsChange(index: number, newContent: string) {
+
+        let newManifests = [
+            ...manifests
+        ];
+
+        newManifests[index] = {
+            ...newManifests[index],
+            content: newContent
+        }
+
+        setManifests(newManifests);
+
+        saveManifestsToLocalStorage(newManifests)
     }
 
-    function handleDeleteCurrenTab() {
-        const tabs = Array.from(manifests.keys())
-        const currentTabIndex = tabs.findIndex((tab => tab == currentTab));
+    function handleDeleteTab(e: MouseEvent<HTMLElement>, tabIndex: number) {
+        e.stopPropagation();
 
-        if (tabs.length - 1 <= 0) {
+        if (manifests.length - 1 <= 0) {
             // Don't allow to delete the last tab
             return;
         }
 
         setManifests((manifests) => {
-            manifests.delete(tabs[currentTabIndex])
+            manifests.splice(tabIndex, 1)
+            localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests));
 
-            localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests, mapJSONReplacer));
+            let newCurrentTab = currentTab;
+
+            // Select the tab just after
+            if (tabIndex == currentTab) {
+                newCurrentTab = Math.min(tabIndex, manifests.length - 1)
+                
+            }
+            if (tabIndex < currentTab) {
+                newCurrentTab--;
+            }
+
+            setCurrentTab(newCurrentTab);
+            // Save to local storage
+            localStorage.setItem("last_tab", newCurrentTab.toString());
         });
-
-        // Select the tab just before
-        const newCurrentTab = tabs[currentTabIndex - 1]
-        setCurrentTab(newCurrentTab);
-
-        // Save to local storage
-        localStorage.setItem("last_tab", newCurrentTab);
-
-
     }
 
     function handleAddTab() {
@@ -114,10 +130,6 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
         }, 0);
     }
 
-    function isTabNameValid(): boolean {
-        return !manifests.has(newTabName);
-    }
-
     function cancelTabCreation() {
         setIsAddingTab(false);
         setNewTabName("");
@@ -128,17 +140,19 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
             cancelTabCreation()
             return;
         }
-        // Make sure there are no errors in the form
-        if (!isTabNameValid()) return;
 
         // Create the new tab
         setManifests((manifests) => {
-            manifests.set(newTabName, "");
-            setCurrentTab(newTabName);
+            manifests.push({
+                id: randomHash(16),
+                tabName: newTabName,
+                content: ""
+            });
+            setCurrentTab(manifests.length - 1);
 
             // Save to local storage
-            localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests, mapJSONReplacer))
-            localStorage.setItem("last_tab", newTabName);
+            localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests))
+            localStorage.setItem("last_tab", (manifests.length - 1).toString());
         });
 
         cancelTabCreation();
@@ -150,22 +164,46 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
         }
     }
 
-    function handleTabChange(newTab: string) {
+    function handleTabChange(newTab: number) {
         setCurrentTab(newTab);
 
+        console.log("Setting last_tab to: " + newTab.toString());
+
         // Save to local storage
-        localStorage.setItem("last_tab", newTab);
+        localStorage.setItem("last_tab", newTab.toString());
     }
 
-    const tabListItems = Array.from(manifests).map(([tabName]) => {
-        return <TabsTrigger
-            value={tabName}
-            key={tabName}
-            className="data-[state=active]:bg-gray-300 data-[state=active]:text-gray-600 data-[state=active]:shadow-md">{tabName}</TabsTrigger>
+    function handleTabDragDrop(e: DragEvent<HTMLDivElement>, droppedOnTab: number) {
+        e.stopPropagation();
+
+        if (droppedOnTab == currentlyDraggingTab) {
+            // Dropping on source
+            return;
+        }
+
+        console.log(`Dropping ${currentlyDraggingTab} onto ${droppedOnTab}`);
+        //todo transform manifests map to an array
+    }
+
+    const tabListItems = manifests.map((manifest, index) => {
+        return <div
+            // value={index}
+            onClick={() => handleTabChange(index)}
+            data-state={currentTab == index ? "active" : "inactive"}
+            className={`${currentlyDraggingTab == index ? "opacity-40" : ""} group cursor-pointer border-[1px] border-white/50 mr-2 data-[state=active]:bg-gray-300 data-[state=active]:text-gray-600 data-[state=active]:shadow-md inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm`}
+            key={manifest.id}
+            draggable="true"
+            onDragStart={() => setCurrentlyDraggingTab(index)}
+            onDragEnd={() => setCurrentlyDraggingTab(null)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleTabDragDrop(e, index)}>
+
+            <span>{manifest.tabName} {Array.from(manifests.keys()).length > 1 && <i onClick={(e) => handleDeleteTab(e, index)} className="bi bi-x-square hidden group-hover:inline hover:text-red-700 align-middle"></i>}</span>
+        </div>
     });
 
-    const tabContentItems = Array.from(manifests).map(([tabName, manifest]) => {
-        return <TabsContent value={tabName} key={tabName}>
+    const tabContentItems = manifests.map((manifest, index) => {
+        return <TabsContent value={index.toString()} key={manifest.id}>
             <ManifestEditor
                 walletAddresses={props.walletAddresses}
                 manifest={manifest}
@@ -173,21 +211,33 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
                 dAppToolkit={props.dAppToolkit}
                 networkId={networkId}
                 onNewTransaction={props.onNewTransaction}
-                onContentChange={(newContent) => handleManifestsChange(tabName, newContent)} />
+                onContentChange={(newContent) => handleManifestsChange(index, newContent)} />
         </TabsContent>
     })
 
-    return <Tabs value={currentTab} onValueChange={(newTab) => handleTabChange(newTab)}>
-        <div className="grid grid-cols-2">
-            <div className="overflow-x-scroll rounded-md mr-2 w-100 bg-secondary">
+    return <Tabs value={currentTab.toString()}>
+        <div className="flex">
+            <div className="overflow-x-scroll rounded-md mr-2 w-100 bg-secondary flex-grow">
                 <TabsList>
                     {tabListItems}
-                    <Input ref={newTabInput} name="newTabName" onBlur={createNewTab} onKeyDown={handleAddTabInputKeyPress} value={newTabName} onChange={(e) => setNewTabName(e.target.value)} className={`${isAddingTab ? "block" : "hidden"} ${!isTabNameValid() ? "bg-red-200" : ""}`} placeholder="New tab name" />
+                    <Input
+                        ref={newTabInput}
+                        name="newTabName"
+                        onBlur={createNewTab}
+                        onKeyDown={handleAddTabInputKeyPress}
+                        value={newTabName}
+                        onChange={(e) => setNewTabName(e.target.value)}
+                        className={`min-w-[150px] ${isAddingTab ? "block" : "hidden"}`}
+                        placeholder="New tab name" />
                 </TabsList>
             </div>
-            <div>
-                <Button variant="secondary" onClick={handleAddTab} className="mr-2"><i className="bi bi-plus-square-fill"></i></Button>
-                <Button variant="destructive" disabled={Array.from(manifests.keys()).length <= 1} onClick={() => handleDeleteCurrenTab()}>Delete Current Tab</Button>
+            <div className="flex">
+                <Button
+                    variant="secondary"
+                    onClick={handleAddTab}
+                    className="mr-2">
+                    <i className="bi bi-plus-square-fill"></i>
+                </Button>
             </div>
 
         </div>
