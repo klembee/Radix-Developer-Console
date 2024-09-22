@@ -179,14 +179,16 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
             return;
         }
 
-        setManifests((manifests) => {
-            let backup = manifests[droppedOnTabIndex];
-            manifests[droppedOnTabIndex] = manifests[currentlyDraggingTabIndex];
-            manifests[currentlyDraggingTabIndex] = backup;
+        let newlyOrderedManifests = [
+            ...manifests
+        ];
+        newlyOrderedManifests.splice(currentlyDraggingTabIndex, 1);
+        newlyOrderedManifests.splice(droppedOnTabIndex, 0, manifests[currentlyDraggingTabIndex])
 
-            // Save to local storage
-            localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests));
-        });
+        setManifests(newlyOrderedManifests);
+
+        // Save to local storage
+        localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(newlyOrderedManifests));
 
         handleTabChange(droppedOnTabIndex);
     }
