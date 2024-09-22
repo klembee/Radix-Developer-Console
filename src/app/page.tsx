@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 const currentLocalStorageSchemaVersion = "3";
 
 export default function Home() {
+  const [hasLoadedStorageSchema, setHasLoadedStorageSchema] = useState(false);
   const [networkId, setNetwork] = useState<number>(RadixNetwork.Stokenet)
   const [dAppToolkit, setdAppToolkit] = useState<RadixDappToolkit | null>(null)
   const [walletAddresses, setWalletAddresses] = useState(new Array<string>())
@@ -42,12 +43,8 @@ export default function Home() {
       if(localStorageSchemaVersion == null || localStorageSchemaVersion != currentLocalStorageSchemaVersion) {
         localStorage.clear();
         localStorage.setItem("schemaversion", currentLocalStorageSchemaVersion);
-
-        if(localStorageSchemaVersion != currentLocalStorageSchemaVersion) {
-          // Reload the app
-          location.reload();
-        }
       } 
+      setHasLoadedStorageSchema(true);
       
       let savedNetwork = localStorage.getItem("network");
       if(savedNetwork == null) {
@@ -77,7 +74,7 @@ export default function Home() {
     <div>
       <Header networkId={networkId} onNetworkChange={handleNetworkChange} />
       <main className="w-9/12 py-5 mx-auto">
-        <ManifestBuilder walletAddresses={walletAddresses} dAppToolkit={dAppToolkit} networkId={networkId} />
+        { hasLoadedStorageSchema && <ManifestBuilder walletAddresses={walletAddresses} dAppToolkit={dAppToolkit} networkId={networkId} />}
       </main>
     </div>
   );
