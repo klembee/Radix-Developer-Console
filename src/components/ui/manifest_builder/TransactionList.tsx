@@ -81,6 +81,10 @@ export default function TransactionList({ transactions, networkId }: Transaction
                     <div onClick={() => handleCopyManifest(tx.manifest)} className="cursor-pointer"> {/* Create new tab from this manifest  */}
                         <i className="bi bi-copy" title="Copy manifest to clipboard"></i>
                     </div>
+
+                    <div onClick={() => }>
+                        <i className="bi bi-arrow-clockwise"></i>
+                    </div>
                 </div>
             </TableCell>
         </TableRow>

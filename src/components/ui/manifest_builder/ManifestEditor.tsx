@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { Input } from '../input';
 import { xrdAddress } from '@/lib/radix';
 import Manifest from '@/lib/data/Manifest';
+import { Textarea } from '../textarea';
 
 
 interface ManifestEditorProps {
@@ -28,6 +29,7 @@ export default function ManifestEditor({ dAppToolkit, networkId, walletAddresses
     const [tipAmount, setTipAmount] = useState(15);
     const [payTipFrom, setPayTipFrom] = useState("");
     const [isSendingTx, setIsSendingTx] = useState(false);
+    const [transactionMessage, setTransactionMessage] = useState("");
 
     const languageSupport = radixManifestLanguage(variables);
 
@@ -106,12 +108,14 @@ export default function ManifestEditor({ dAppToolkit, networkId, walletAddresses
 
         const response = dAppToolkit.walletApi.sendTransaction({
             transactionManifest: manifest,
-            version: 1
+            version: 1,
+            message: transactionMessage == "" ? undefined : transactionMessage
         });
 
         response.map((result) => {
             onNewTransaction(result.transactionIntentHash, manifest);
             setIsSendingTx(false);
+            setTransactionMessage("");
         })
 
         response.mapErr((err) => {
@@ -167,7 +171,11 @@ export default function ManifestEditor({ dAppToolkit, networkId, walletAddresses
             </label>
         </div>}
 
-        <div className="w-fit mx-auto">
+        <div className='w-1/2 mb-2'>
+            <Textarea value={transactionMessage} onChange={(e) => setTransactionMessage(e.target.value)} placeholder='Optional transaction message'></Textarea>
+        </div>
+
+        <div>
             <Button onClick={sendManifestToWallet} disabled={isSendingTx || walletAddresses.length == 0}>Send to the wallet</Button>
         </div>
     </div>
