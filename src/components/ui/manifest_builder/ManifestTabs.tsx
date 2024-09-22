@@ -179,7 +179,7 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
             return;
         }
 
-        let newlyOrderedManifests = [
+        const newlyOrderedManifests = [
             ...manifests
         ];
         newlyOrderedManifests.splice(currentlyDraggingTabIndex, 1);
