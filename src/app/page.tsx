@@ -5,7 +5,7 @@ import ManifestBuilder from "@/components/ui/manifest_builder/ManifestBuilder";
 import { DataRequestBuilder, RadixDappToolkit, RadixNetwork } from "@radixdlt/radix-dapp-toolkit";
 import { useEffect, useState } from "react";
 
-const currentLocalStorageSchemaVersion = "2";
+const currentLocalStorageSchemaVersion = "3";
 
 export default function Home() {
   const [networkId, setNetwork] = useState<number>(RadixNetwork.Stokenet)
@@ -42,6 +42,11 @@ export default function Home() {
       if(localStorageSchemaVersion == null || localStorageSchemaVersion != currentLocalStorageSchemaVersion) {
         localStorage.clear();
         localStorage.setItem("schemaversion", currentLocalStorageSchemaVersion);
+
+        if(localStorageSchemaVersion != currentLocalStorageSchemaVersion) {
+          // Reload the app
+          location.reload();
+        }
       } 
       
       let savedNetwork = localStorage.getItem("network");
