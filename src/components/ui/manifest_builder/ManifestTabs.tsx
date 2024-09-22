@@ -4,10 +4,10 @@ import { useRef, useState, KeyboardEvent, MouseEvent, DragEvent, useEffect } fro
 import { useImmer } from "use-immer";
 import { enableMapSet } from "immer";
 import ManifestEditor from "./ManifestEditor";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
+import { Tabs, TabsContent, TabsList } from "../tabs";
 import { sampleManifests } from "../../../lib/manifests/sampleManifests";
 import Variable from "@/lib/data/Variable";
-import { mapJSONReplacer, mapJSONReviver, randomHash } from "@/lib/utils";
+import { mapJSONReviver, randomHash } from "@/lib/utils";
 import _ from "underscore";
 import { RadixDappToolkit } from "@radixdlt/radix-dapp-toolkit";
 import Manifest from "@/lib/data/Manifest";
@@ -23,7 +23,7 @@ interface ManifestTabsProps {
 export default function ManifestTabs({ networkId, variables, ...props }: ManifestTabsProps) {
     enableMapSet();
 
-    const [manifests, setManifests] = useImmer<Array<Manifest>>(new Array());
+    const [manifests, setManifests] = useImmer<Array<Manifest>>([]);
 
     const [currentTab, setCurrentTab] = useState(0);
     const [currentlyDraggingTab, setCurrentlyDraggingTab] = useState<number | null>(null);
@@ -71,7 +71,7 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
 
     function handleManifestsChange(index: number, newContent: string) {
 
-        let newManifests = [
+        const newManifests = [
             ...manifests
         ];
 
