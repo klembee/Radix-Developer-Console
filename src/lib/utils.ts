@@ -28,3 +28,7 @@ export function mapJSONReviver(_key: any, value: any) {
 export function randomHash(size: number) {
   return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 }
+
+export function sliceAddress(address: string): string {
+  return `${address.slice(0, 5)}...${address.slice(-10)}`
+}

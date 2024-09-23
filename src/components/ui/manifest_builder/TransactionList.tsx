@@ -7,12 +7,13 @@ import Toastify from "toastify-js";
 
 interface TransactionListProps {
     networkId: number,
-    transactions: Array<Transaction>
+    transactions: Array<Transaction>,
+    onReplayManifest: (manifest: string) => void
 }
 
 const MAX_TX_PER_PAGE = 5;
 
-export default function TransactionList({ transactions, networkId }: TransactionListProps) {
+export default function TransactionList({ onReplayManifest, transactions, networkId }: TransactionListProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const NUMBER_OF_PAGES = Math.ceil(transactions.length / MAX_TX_PER_PAGE)
     const RADIX_DASHBOARD_TRANSACTION_URL = networkId == RadixNetwork.Stokenet ? "https://stokenet-dashboard.radixdlt.com/transaction" : "https://dashboard.radixdlt.com/transaction"
@@ -73,13 +74,17 @@ export default function TransactionList({ transactions, networkId }: Transaction
 
             </TableCell>
             <TableCell>
-                <div className="flex text-lg">
+                <div className="flex text-lg items-center">
                     <div className="mr-2"> {/* Open in explorer */}
-                        <a href={transactionUrl(tx.hash)} target="_blank" title="Copy manifest to clipboard"><i className="bi bi-box-arrow-up-right"></i></a>
+                        <a href={transactionUrl(tx.hash)} target="_blank" title="See transaction in explorer"><i className="bi bi-box-arrow-up-right"></i></a>
                     </div>
 
-                    <div onClick={() => handleCopyManifest(tx.manifest)} className="cursor-pointer"> {/* Create new tab from this manifest  */}
+                    <div onClick={() => handleCopyManifest(tx.manifest)} className="cursor-pointer mr-2">
                         <i className="bi bi-copy" title="Copy manifest to clipboard"></i>
+                    </div>
+
+                    <div onClick={() => onReplayManifest(tx.manifest)} className="cursor-pointer">
+                        <i className="bi bi-arrow-counterclockwise" title="Replay the transaction"></i>
                     </div>
                 </div>
             </TableCell>

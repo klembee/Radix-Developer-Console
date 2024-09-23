@@ -17,10 +17,11 @@ interface ManifestTabsProps {
     networkId: number,
     variables: Map<string, Variable>,
     dAppToolkit: RadixDappToolkit | null,
-    onNewTransaction: (transactionHash: string, manifest: string) => void
+    sendButtonDisabled: boolean,
+    onSendTransactionClick: (manifest: string) => void
 }
 
-export default function ManifestTabs({ networkId, variables, ...props }: ManifestTabsProps) {
+export default function ManifestTabs({ networkId, variables, sendButtonDisabled, onSendTransactionClick, ...props }: ManifestTabsProps) {
     enableMapSet();
 
     const [manifests, setManifests] = useImmer<Array<Manifest>>([]);
@@ -102,7 +103,7 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
             // Select the tab just after
             if (tabIndex == currentTab) {
                 newCurrentTab = Math.min(tabIndex, manifests.length - 1)
-                
+
             }
             if (tabIndex < currentTab) {
                 newCurrentTab--;
@@ -213,12 +214,9 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
     const tabContentItems = manifests.map((manifest, index) => {
         return <TabsContent value={index.toString()} key={manifest.id}>
             <ManifestEditor
-                walletAddresses={props.walletAddresses}
                 manifest={manifest}
                 variables={variables}
-                dAppToolkit={props.dAppToolkit}
                 networkId={networkId}
-                onNewTransaction={props.onNewTransaction}
                 onContentChange={(newContent) => handleManifestsChange(index, newContent)} />
         </TabsContent>
     })
@@ -240,12 +238,17 @@ export default function ManifestTabs({ networkId, variables, ...props }: Manifes
                 </TabsList>
             </div>
             <div className="flex">
-                <Button
-                    variant="secondary"
-                    onClick={handleAddTab}
-                    className="mr-2">
-                    <i className="bi bi-plus-square-fill"></i>
-                </Button>
+                <div>
+                    <Button
+                        variant="secondary"
+                        onClick={handleAddTab}
+                        className="mr-2">
+                        <i className="bi bi-plus-square-fill"></i>
+                    </Button>
+                </div>
+                <div>
+                    <Button onClick={() => onSendTransactionClick(manifests[currentTab].content)} disabled={sendButtonDisabled}>Send to the wallet</Button>
+                </div>
             </div>
 
         </div>
