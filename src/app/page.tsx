@@ -12,6 +12,7 @@ export default function Home() {
   const [networkId, setNetwork] = useState<number>(RadixNetwork.Stokenet)
   const [dAppToolkit, setdAppToolkit] = useState<RadixDappToolkit | null>(null)
   const [walletAddresses, setWalletAddresses] = useState(new Array<string>())
+  const [isLoadingNewNetwork, setIsLoadingNewNetwork] = useState(false);
 
   function getDAppDef(networkId: number){
     return networkId == RadixNetwork.Stokenet ? "account_tdx_2_12yf6xmwwhnx45fxms9q2qe094fwhjrls6s0xznsltug94ht2amyt55" : "account_rdx12x42kaa2mfuy8huqhxgl9e2sp4mqj7yy6gxc09fyevdzxpj2l2zlmw"
@@ -59,6 +60,7 @@ export default function Home() {
   }, [])
 
   function handleNetworkChange(newNetworkId: number) {
+    setIsLoadingNewNetwork(true);
     setNetwork(newNetworkId);
     localStorage.setItem("network", newNetworkId.toString());
     
@@ -72,9 +74,12 @@ export default function Home() {
 
   return (
     <div>
-      <Header networkId={networkId} onNetworkChange={handleNetworkChange} />
-      <main className="w-9/12 py-5 mx-auto">
-        { hasLoadedStorageSchema && <ManifestBuilder walletAddresses={walletAddresses} dAppToolkit={dAppToolkit} networkId={networkId} />}
+      <Header 
+        networkId={networkId} 
+        onNetworkChange={handleNetworkChange} />
+      <main className="w-full px-2 py-5 mx-auto">
+        { (hasLoadedStorageSchema && !isLoadingNewNetwork ) && <ManifestBuilder walletAddresses={walletAddresses} dAppToolkit={dAppToolkit} networkId={networkId} />}
+        {/* { isLoadingNewNetwork && <div className="lds-ring"><div></div><div></div><div></div><div></div></div> } */}
       </main>
     </div>
   );

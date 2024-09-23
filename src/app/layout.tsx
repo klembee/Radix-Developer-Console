@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./ui/globals.css";
+// import "./ui/loading.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "toastify-js/src/toastify.css"
 import { ThemeProvider } from "./ThemeProvider";

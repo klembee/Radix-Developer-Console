@@ -40,7 +40,7 @@ export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresse
 
         if (typeof window !== 'undefined' && window.localStorage) {
             const sendTipStorage = localStorage.getItem("sendTip");
-            if(sendTipStorage != null) {
+            if (sendTipStorage != null) {
                 setSendTip(sendTipStorage === "true");
             } else {
                 localStorage.setItem("sendTip", "false");
@@ -134,7 +134,7 @@ export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresse
         }
 
         // Include the tip
-        if(sendTip && networkId == RadixNetwork.Mainnet) {
+        if (sendTip && networkId == RadixNetwork.Mainnet) {
             newManifest += `CALL_METHOD
                     Address("${payTipFrom}")
                     "withdraw"
@@ -198,7 +198,7 @@ export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresse
         return <option
             key={account}
             value={account}>
-                {sliceAddress(account)}
+            {sliceAddress(account)}
         </option>
     })
 
@@ -210,9 +210,32 @@ export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresse
 
     return <div>
         <h1 className="text-2xl text-center mb-5">Transaction Manifest Builder</h1>
-        <div>
-            <div className="mb-5 grid grid-cols-12 gap-1">
-                <div className="col-span-12 sm:col-span-12 md:col-span-6">
+        <div className="grid grid-cols-12 gap-2">
+            <div className="col-span-12 md:col-span-8">
+                <ManifestTabs
+                    walletAddresses={walletAddresses}
+                    onSendTransactionClick={(manifest) => sendManifestToWallet(preparedManifest(manifest))}
+                    sendButtonDisabled={isSendingTx || walletAddresses.length == 0}
+                    variables={variables}
+                    dAppToolkit={dAppToolkit}
+                    networkId={networkId} />
+
+                {(walletAddresses.length > 0 && networkId == RadixNetwork.Mainnet) && <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox id="tip" checked={sendTip} onCheckedChange={(e) => handleSetSendTip(e.valueOf() === true)} />
+                    <label
+                        htmlFor="tip"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        <span>Include a tip of <Input className='w-[70px] h-9 inline text-center' type='number' min={1} value={tipAmount} onChange={(e) => setTipAmount(parseInt(e.target.value))} /> XRD to the creator of this developer console from {accountSelect}</span>
+                    </label>
+                </div>}
+
+                <div className='w-full md:w-1/2 mb-2'>
+                    <Textarea value={transactionMessage} onChange={(e) => setTransactionMessage(e.target.value)} placeholder='Optional transaction message'></Textarea>
+                </div>
+            </div>
+            <div className="mb-5 col-span-12 md:col-span-4">
+                <div className="mb-3">
                     <Accordion className="border rounded overflow-hidden" defaultValue="item-1" type="single" collapsible>
                         <AccordionItem className="border-b-0" value="item-1">
                             <AccordionTrigger className="px-3 hover:no-underline"><p className="text-xl text-center">Variable List</p></AccordionTrigger>
@@ -227,7 +250,7 @@ export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresse
                         </AccordionItem>
                     </Accordion>
                 </div>
-                <div className="col-span-12 sm:col-span-12 md:col-span-6">
+                <div>
                     <Accordion className="border rounded overflow-hidden" defaultValue="item-1" type="single" collapsible>
                         <AccordionItem className="border-b-0" value="item-1">
                             <AccordionTrigger className="px-3 hover:no-underline"><p className="text-xl text-center">Recent Transactions</p></AccordionTrigger>
@@ -240,29 +263,6 @@ export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresse
                         </AccordionItem>
                     </Accordion>
                 </div>
-            </div>
-            <div>
-                <ManifestTabs
-                    walletAddresses={walletAddresses}
-                    onSendTransactionClick={(manifest) => sendManifestToWallet(preparedManifest(manifest))}
-                    sendButtonDisabled={isSendingTx || walletAddresses.length == 0}
-                    variables={variables}
-                    dAppToolkit={dAppToolkit}
-                    networkId={networkId} />
-            </div>
-
-            {(walletAddresses.length > 0 && networkId == RadixNetwork.Mainnet) && <div className="flex items-center space-x-2 mb-2">
-                <Checkbox id="tip" checked={sendTip} onCheckedChange={(e) => handleSetSendTip(e.valueOf() === true)} />
-                <label
-                    htmlFor="tip"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                    <span>Include a tip of <Input className='w-[70px] h-9 inline text-center' type='number' min={1} value={tipAmount} onChange={(e) => setTipAmount(parseInt(e.target.value))} /> XRD to the creator of this developer console from {accountSelect}</span>
-                </label>
-            </div>}
-
-            <div className='w-1/2 mb-2'>
-                <Textarea value={transactionMessage} onChange={(e) => setTransactionMessage(e.target.value)} placeholder='Optional transaction message'></Textarea>
             </div>
         </div>
     </div>
