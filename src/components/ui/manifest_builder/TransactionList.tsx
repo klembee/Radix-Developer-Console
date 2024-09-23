@@ -18,10 +18,6 @@ export default function TransactionList({ onReplayManifest, transactions, networ
     const NUMBER_OF_PAGES = Math.ceil(transactions.length / MAX_TX_PER_PAGE)
     const RADIX_DASHBOARD_TRANSACTION_URL = networkId == RadixNetwork.Stokenet ? "https://stokenet-dashboard.radixdlt.com/transaction" : "https://dashboard.radixdlt.com/transaction"
 
-    if (transactions.length == 0) {
-        return <p className="p-2">No transaction to show.</p>
-    }
-
     function hasPrev() {
         return currentPage > 1;
     }
@@ -63,6 +59,10 @@ export default function TransactionList({ onReplayManifest, transactions, networ
             gravity: "bottom",
             position: "right"
         }).showToast()
+    }
+
+    if (transactions.length == 0) {
+        return <p className="text-center">No transaction to show.</p>
     }
 
     const rows = transactions.slice((currentPage - 1) * MAX_TX_PER_PAGE, (currentPage - 1) * MAX_TX_PER_PAGE + MAX_TX_PER_PAGE).map((tx) => {

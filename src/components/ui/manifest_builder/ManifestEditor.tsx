@@ -16,7 +16,7 @@ export default function ManifestEditor({ manifest, variables, onContentChange }:
     const languageSupport = radixManifestLanguage(variables);
 
     return <div>
-        <div className='mb-2'>
+        <div className='mb-2 border'>
             <CodeMirror
                 autoFocus={true}
                 extensions={[languageSupport]}
