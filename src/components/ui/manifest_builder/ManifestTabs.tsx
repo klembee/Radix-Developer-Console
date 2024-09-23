@@ -21,7 +21,7 @@ interface ManifestTabsProps {
     onSendTransactionClick: (manifest: string) => void
 }
 
-export default function ManifestTabs({ networkId, variables, sendButtonDisabled, onSendTransactionClick, ...props }: ManifestTabsProps) {
+export default function ManifestTabs({ networkId, variables, sendButtonDisabled, onSendTransactionClick }: ManifestTabsProps) {
     enableMapSet();
 
     const [manifests, setManifests] = useImmer<Array<Manifest>>([]);
@@ -251,7 +251,6 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
             <ManifestEditor
                 manifest={manifest}
                 variables={variables}
-                networkId={networkId}
                 onContentChange={(newContent) => handleManifestsChange(index, newContent)} />
         </TabsContent>
     })

@@ -22,7 +22,7 @@ interface ManifestBuilderProps {
     networkId: number
 }
 
-export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresses, ...props }: ManifestBuilderProps) {
+export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresses }: ManifestBuilderProps) {
 
     const [variables, setVariables] = useImmer(new Map<string, Variable>());
     const [transactions, setTransactions] = useState(new Array<Transaction>);
