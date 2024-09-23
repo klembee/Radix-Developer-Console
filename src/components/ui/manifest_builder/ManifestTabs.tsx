@@ -28,6 +28,7 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
 
     const [currentTab, setCurrentTab] = useState(0);
     const [currentlyDraggingTabIndex, setCurrentlyDraggingTabIndex] = useState<number | null>(null);
+    const [currentlyEditingTabId, setCurrentlyEditingTabId] = useState<number | null>(null)
 
     const [newTabName, setNewTabName] = useState("");
     const [isAddingTab, setIsAddingTab] = useState(false);
@@ -194,9 +195,31 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
         handleTabChange(droppedOnTabIndex);
     }
 
+    function handleTabDoubleClick(index: number) {
+        // Start the tab name editing process
+        setCurrentlyEditingTabId(index);
+    }
+
+    function handleCompleteTabNameEditing() {
+        setCurrentlyEditingTabId(null);
+    }
+
+    function handleTabNameEditingKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+        if(e.key === "Enter"){
+            handleCompleteTabNameEditing();
+        }
+    }
+
+    function handleTabNameEditingValueChange(index: number, newValue: string) {
+        setManifests((manifests) => {
+            manifests[index].tabName = newValue
+
+            localStorage.setItem(LOCAL_STORAGE_MANIFESTS_KEY, JSON.stringify(manifests));
+        })
+    }
+
     const tabListItems = manifests.map((manifest, index) => {
         return <div
-            // value={index}
             onClick={() => handleTabChange(index)}
             data-state={currentTab == index ? "active" : "inactive"}
             className={`${currentlyDraggingTabIndex == index ? "opacity-40" : ""} group cursor-pointer border-[1px] border-white/50 mr-2 data-[state=active]:bg-gray-300 data-[state=active]:text-gray-600 data-[state=active]:shadow-md inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm`}
@@ -205,9 +228,21 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
             onDragStart={() => setCurrentlyDraggingTabIndex(index)}
             onDragEnd={() => setCurrentlyDraggingTabIndex(null)}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleTabDragDrop(e, index)}>
+            onDrop={(e) => handleTabDragDrop(e, index)}
+            onDoubleClick={() => handleTabDoubleClick(index)}>
 
-            <span>{manifest.tabName} {Array.from(manifests.keys()).length > 1 && <i onClick={(e) => handleDeleteTab(e, index)} className="bi bi-x-square hidden group-hover:inline hover:text-red-700 align-middle"></i>}</span>
+            { (currentlyEditingTabId == index) && 
+                <input
+                    className="bg-transparent w-auto border border-black/30 px-1 rounded outline-none"
+                    autoFocus
+                    onFocus={(e) => {e.target.select()}}
+                    onBlur={handleCompleteTabNameEditing} 
+                    onKeyDown={handleTabNameEditingKeyDown} 
+                    onChange={(e) => handleTabNameEditingValueChange(index, e.target.value)}
+                    value={manifests[index].tabName}/>}
+
+            { currentlyEditingTabId != index && 
+                <span>{manifest.tabName} {Array.from(manifests.keys()).length > 1 && <i onClick={(e) => handleDeleteTab(e, index)} className="bi bi-x-square hidden group-hover:inline hover:text-red-700 align-middle"></i>}</span>}
         </div>
     });
 
