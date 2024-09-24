@@ -3,7 +3,7 @@
 import ManifestTabs from "./ManifestTabs";
 import { useEffect, useState } from "react";
 import { useImmer } from "use-immer";
-import { mapJSONReplacer, mapJSONReviver, sliceAddress } from "@/lib/utils";
+import { mapJSONReplacer, mapJSONReviver, replaceVariablesInString, sliceAddress } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import VariableList from "./VariableList";
 import { RadixDappToolkit, RadixNetwork } from "@radixdlt/radix-dapp-toolkit";
@@ -120,18 +120,7 @@ export default function ManifestBuilder({ networkId, dAppToolkit, walletAddresse
     }
 
     function preparedManifest(manifest: string): string {
-        let newManifest = manifest.slice(0);
-
-        // Set the variables
-        for (const match of manifest.matchAll(/\${?\w+}?/g)) {
-            const variable = match[0].replace(/\W/g, "")
-            const replaceWith = variables.get(variable)
-            if (replaceWith) {
-                newManifest = newManifest.replaceAll(match[0], replaceWith.value);
-            } else {
-                console.log(`Variable ${variable} undefined`);
-            }
-        }
+        let newManifest = replaceVariablesInString(manifest, variables)
 
         // Include the tip
         if (sendTip && networkId == RadixNetwork.Mainnet) {

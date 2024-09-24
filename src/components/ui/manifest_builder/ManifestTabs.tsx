@@ -249,6 +249,7 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
     const tabContentItems = manifests.map((manifest, index) => {
         return <TabsContent value={index.toString()} key={manifest.id}>
             <ManifestEditor
+                networkId={networkId}
                 manifest={manifest}
                 variables={variables}
                 onContentChange={(newContent) => handleManifestsChange(index, newContent)} />
@@ -281,7 +282,10 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
                     </Button>
                 </div>
                 <div>
-                    <Button onClick={() => onSendTransactionClick(manifests[currentTab].content)} disabled={sendButtonDisabled}>Send to the wallet</Button>
+                    <Button 
+                        className="bg-green-400 hover:bg-green-400/90 dark:bg-green-700 dark:hover:bg-green-700/90 text-foreground"
+                        onClick={() => onSendTransactionClick(manifests[currentTab].content)} 
+                        disabled={sendButtonDisabled}>Send to the wallet</Button>
                 </div>
             </div>
 

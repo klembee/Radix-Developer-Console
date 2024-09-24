@@ -92,7 +92,7 @@ export default function VariableList({ variables, onVariablesChange, onVariableD
     })
 
     return <div>
-        <div ref={variableListOverflowRef} className="max-h-[350px] overflow-y-scroll">
+        <div ref={variableListOverflowRef} className="max-h-[280px] overflow-y-scroll">
             <Table className="table-fixed">
                 <TableHeader>
                     <TableRow>

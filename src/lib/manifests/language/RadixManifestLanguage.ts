@@ -7,16 +7,21 @@ import {LanguageSupport} from "@codemirror/language"
 import { manifestEnumFields, manifestInstructions, manifestObjects } from "./manifestInstructions"
 import Variable from "@/lib/data/Variable"
 
+export const manifestValidTypes = ["String", "NonFungibleGlobalId", "NonFungibleLocalId", "Tuple", "U8", "U16", "U32", "U64", "U128", "U8", "U16", "U32", "U64", "I128", "Bool", "Decimal", "Address", "Bucket", "Proof", "Blob", "PreciseDecimal", "Bytes", "Array", "String"]
+
+
 const parserWithMetadata = parser.configure({
   props: [
     styleTags({
       Method: t.className,
       Variable: t.variableName,
-      String: t.string,
+      StringLiteral: t.string,
       Integer: t.number,
-      Boolean: t.bool,
+      Bool: t.bool,
       EnumName: t.variableName,
-      "Address Tuple Option Array Map Decimal Enum NonFungibleGlobalId NonFungibleLocalId": t.keyword,
+      Type: t.typeName,
+      "Array Map": t.typeName,
+      "Enum EnumName ArrayType MapKeyType MapValueType Address Bucket Decimal Expression Tuple Option NonFungibleGlobalId NonFungibleLocalId": t.keyword,
       "Object/String": t.string,
       Comment: t.lineComment,
       Semicolon: t.separator,
