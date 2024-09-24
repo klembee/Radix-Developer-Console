@@ -62,7 +62,7 @@ export default function TransactionList({ onReplayManifest, transactions, networ
     }
 
     if (transactions.length == 0) {
-        return <p className="text-center">No transaction to show.</p>
+        return <p className="text-center mb-3">No transaction to show.</p>
     }
 
     const rows = transactions.slice((currentPage - 1) * MAX_TX_PER_PAGE, (currentPage - 1) * MAX_TX_PER_PAGE + MAX_TX_PER_PAGE).map((tx) => {

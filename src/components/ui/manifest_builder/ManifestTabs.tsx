@@ -249,6 +249,7 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
     const tabContentItems = manifests.map((manifest, index) => {
         return <TabsContent value={index.toString()} key={manifest.id}>
             <ManifestEditor
+                networkId={networkId}
                 manifest={manifest}
                 variables={variables}
                 onContentChange={(newContent) => handleManifestsChange(index, newContent)} />

@@ -1,91 +1,46 @@
 @top Program { Line+ }
 @skip { space | Comment }
 
-value { Map | Tuple | Enum | Decimal | Array | Tuple | Option | String | NonFungibleGlobalId | NonFungibleLocalId | Address | Integer | Boolean | Variable }
+value { Map | Tuple | Enum | Decimal | Array | Tuple | Option | StringLiteral | NonFungibleGlobalId | NonFungibleLocalId | Address | Integer | Bool | Variable | Expression | Bucket | Proof | Blob | PreciseDecimal | Bytes | Result }
 
 Line { Method (value)+ Semicolon }
-Address { ("Address" "\(" String ")")  } 
+Address { ("Address" "\(" StringLiteral ")")  } 
 Option { "Some(" value ")" | "None" }
-Decimal { "Decimal(" (Number+ | String) ")" }
-Tuple {"Tuple(" (value ","?)+ ")"}
-Array {"Array<" type ">(" (value ","?)+ ")"}
-Map {"Map<"type ", " type">(" (value "=>" value)+ ")"}
-Enum {"Enum<" EnumName ">(" value? ","? ")"}
-NonFungibleGlobalId {"NonFungibleGlobalId(" String ")"}
-NonFungibleLocalId {"NonFungibleLocalId(" String ")"}
-String { "\"" (char+ | Variable+) "\"" }
+Decimal { "Decimal(" StringLiteral ")" }
+PreciseDecimal { "PreciseDecimal(" StringLiteral ")"}
+Tuple {"Tuple" "(" (value ","?)* ")"}
+Array {"Array<" ArrayType ">(" (value ","?)* ")"}
+Enum {"Enum" ("<" (EnumName | Integer) ">") "(" (value ","?)* ")" }
+Map {"Map<" MapKeyType "," MapValueType ">(" MapItem* ")"}
+MapItem { (value "=>" value ","?) }
+Bucket {"Bucket(" StringLiteral ")"}
+Proof {"Proof(" StringLiteral ")"}
+Blob {"Blob(" StringLiteral ")"}
+Bytes {"Bytes(" hex* ")"}
+NonFungibleGlobalId {"NonFungibleGlobalId(" StringLiteral ")"}
+NonFungibleLocalId {"NonFungibleLocalId(" StringLiteral ")"}
+Result {"Ok(" StringLiteral ")" | "Err(" StringLiteral ")"}
+Expression {"Expression("StringLiteral")" | "Expression("StringLiteral")"}
+EnumName { word "::" word }
+ArrayType { word }
+MapKeyType {word}
+MapValueType {word}
 
 @tokens {
+  Integer { number ("u" | "i") ("8" | "16" | "32" | "64" | "128") }
+  StringLiteral { "\"" (!["])* "\"" }
   Variable { "$" (  char+  | "{" char+ "}") }
-  type {"String" | "NonFungibleGlobalId" | "NonFungibleLocalId" | "Tuple"}
   Semicolon { ";" }
-  Boolean { "true" | "false" }
-  
-  Integer { Number ("u" | "i") Number }
-  Number { @digit+ }
-  space { @whitespace+ }
+  Bool { "true" | "false" }
   Comment { "#" ![\n]* }
+  
+  number { @digit+ }
+  space { @whitespace+ }
 
+  word { $[a-zA-Z]+ }
   char { $[a-zA-Z0-9_] | "\\" esc }
   esc  { $["\\\/bfnrt] | "u" hex hex hex hex }
   hex  { $[0-9a-fA-F] }
 
-  EnumName { $[a-zA-Z]+ "::" $[a-zA-Z]+ }
-
-  Method { 
-    "ALLOCATE_GLOBAL_ADDRESS" |
-    "ASSERT_WORKTOP_CONTAINS" |
-    "ASSERT_WORKTOP_CONTAINS_ANY" |
-    "ASSERT_WORKTOP_CONTAINS_NON_FUNGIBLES" | 
-    "BURN_RESOURCE" | 
-    "CALL_FUNCTION" | 
-    "CALL_METHOD" | 
-    "CLAIM_COMPONENT_ROYALTIES" | 
-    "CLAIM_PACKAGE_ROYALTIES" | 
-    "CLONE_PROOF" | 
-    "CREATE_ACCESS_CONTROLLER" | 
-    "CREATE_ACCOUNT" | 
-    "CREATE_ACCOUNT_ADVANCED" | 
-    "CREATE_FUNGIBLE_RESOURCE" | 
-    "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY" | 
-    "CREATE_IDENTITY" | 
-    "CREATE_IDENTITY_ADVANCED" | 
-    "CREATE_NON_FUNGIBLE_RESOURCE" | 
-    "CREATE_NON_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY" | 
-    "CREATE_PROOF_FROM_AUTH_ZONE_OF_ALL" | 
-    "CREATE_PROOF_FROM_AUTH_ZONE_OF_AMOUNT" | 
-    "CREATE_PROOF_FROM_AUTH_ZONE_OF_NON_FUNGIBLES" | 
-    "CREATE_PROOF_FROM_BUCKET_OF_ALL" | 
-    "CREATE_PROOF_FROM_BUCKET_OF_AMOUNT" | 
-    "CREATE_PROOF_FROM_BUCKET_OF_NON_FUNGIBLES" | 
-    "CREATE_VALIDATOR" | 
-    "DROP_ALL_PROOFS" | 
-    "DROP_AUTH_ZONE_PROOFS" | 
-    "DROP_AUTH_ZONE_REGULAR_PROOFS" | 
-    "DROP_AUTH_ZONE_SIGNATURE_PROOFS" | 
-    "DROP_NAPED_PROOFS" |
-    "FREEZE_VAULT" |
-    "LOCK_COMPONENT_ROYALTY" |
-    "LOCK_METADATA" |
-    "LOCK_OWNER_ROLE" |
-    "MINT_FUNGIBLE" |
-    "MINT_NON_FUNGIBLE" |
-    "MINT_RUID_NON_FUNGIBLE" |
-    "CALL_FUNCTION" |
-    "POP_FROM_AUTH_ZONE" |
-    "PUBLISH_PACKAGE_ADVANCED" |
-    "PUSH_TO_AUTH_ZONE" |
-    "RECALL" |
-    "RECALL_NON_FUNGIBLE" |
-    "REMOVE_METADATA" |
-    "RETURN_TO_WORKTOP" |
-    "SET_COMPONENT_ROYALTY" |
-    "SET_METADATA" |
-    "SET_OWNER_ROLE" |
-    "SET_ROLE" |
-    "TAKE_ALL_FROM_WORKTOP" |
-    "TAKE_FROM_WORKTOP" |
-    "TAKE_NON_FUNGIBLES_FROM_WORKTOP" |
-    "UNFREEZE_VAULT"
-    }
+  Method { $[A-Z_]+ (" " | "\n") }
 }
