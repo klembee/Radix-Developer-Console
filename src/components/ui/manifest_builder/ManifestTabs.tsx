@@ -247,7 +247,7 @@ export default function ManifestTabs({ networkId, variables, sendButtonDisabled,
     });
 
     const tabContentItems = manifests.map((manifest, index) => {
-        return <TabsContent value={index.toString()} key={manifest.id}>
+        return <TabsContent value={index.toString()} key={manifest.id} className="overflow-y-scroll max-h-[calc(100vh-250px)]">
             <ManifestEditor
                 networkId={networkId}
                 manifest={manifest}

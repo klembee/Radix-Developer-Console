@@ -77,7 +77,7 @@ export default function Home() {
       <Header 
         networkId={networkId} 
         onNetworkChange={handleNetworkChange} />
-      <main className="w-full px-2 py-5 mx-auto">
+      <main className="w-full 2xl:w-5/6 max-w-[1600px] px-2 py-5 mx-auto">
         { (hasLoadedStorageSchema && !isLoadingNewNetwork ) && <ManifestBuilder walletAddresses={walletAddresses} dAppToolkit={dAppToolkit} networkId={networkId} />}
         {/* { isLoadingNewNetwork && <div className="lds-ring"><div></div><div></div><div></div><div></div></div> } */}
       </main>

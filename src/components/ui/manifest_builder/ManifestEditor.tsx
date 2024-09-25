@@ -285,7 +285,6 @@ export default function ManifestEditor({ networkId, manifest, variables, onConte
                 value={manifest.content}
                 theme={theme == "light" ? "light" : "dark"}
                 minHeight="100px"
-                maxHeight="500px"
                 placeholder="Start writing your manifest"
                 onChange={(manifest) => handleContentChange(manifest)} />
         </div>
